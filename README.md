@@ -15,6 +15,8 @@ Capstone project on synthetic, fictional Instamart data (all amounts in INR). It
 9. `python src/part_b_segments.py`
 10. `python src/part_b_lapse.py`
 11. `python src/part_c_triage.py`
+12. `python src/part_d_rag.py`
+13. `python src/part_d_agent.py`
 
 ## Part A
 
@@ -228,7 +230,65 @@ Priority: 119 NORMAL, 45 HIGH.
 147 tickets were classified and rule-validated (JSON schema check or single-keyword extraction) and routed automatically. 17 tickets went to humans: 4 empty, 4 too long and 9 whose model output could not be validated. Nothing was guessed.
 
 ## Part D
-TODO
+
+### Chunking
+Each policy file is split into 40-word chunks with an overlap of 10 words (stride 30), stopping after the first chunk that reaches the last word. Total 15 chunks: refund 4, delivery 3, escalation 3, payment 3, privacy 2. The source file name is stored with every chunk.
+
+### Retrieval
+`TfidfVectorizer()` is fitted on the chunk texts, the query is transformed with the same vectorizer and chunks are ranked by cosine similarity. `retrieve(query, k=3)` returns dictionaries with source, score and text. TF measures how often a word occurs in a chunk, and IDF down-weights words that occur in many chunks so that rare, informative words count more. A limitation is that TF-IDF only matches words: a question and a policy sentence that mean the same thing in different words (for example "money back" and "refund") get a low similarity. For the query "refund policy late delivery" the top three chunks all come from refund_policy.txt.
+
+### Answering
+`answer(question)` retrieves three chunks and sends two messages to `mock_llm.chat`: a system message with the words POLICY ASSISTANT (answer only from the context, otherwise say the information could not be found) and a user message of the form `CONTEXT:` newline, the three chunks each prefixed with `[<source file>]`, newline `QUESTION:` newline, the question. It returns the answer text and the sources used.
+
+### Evaluation (`data/raw/policy_eval.csv`, 14 questions)
+| Setting | Chunks | Answerable: expected_doc in top 3 | Answerable: expected_fact in answer | Unanswerable: fallback "I could not find..." |
+|---|---|---|---|---|
+| Overlap 10 | 15 | 12/12 | 12/12 | 2/2 |
+| Overlap 0 | 13 | 12/12 | 10/12 | 2/2 |
+
+With overlap 0 two questions break. "What delivery time makes a completed order eligible for a full refund?" returned only "receives a full refund of the order amount.", because the sentence containing "more than 45 minutes" is cut across a chunk boundary and the best chunk holds only its second half. "How soon is money returned when a payment fails but is deducted?" returned an answer that stops at "returned automatically", because "within 48 hours" falls into the next chunk. The 10-word overlap keeps such sentences together.
+
+### Tools
+Five tools are listed in `TOOLS_SPEC` (name, one-sentence description, parameter specification) and mapped by name in `TOOL_MAP`; the agent looks up the name the model asks for and calls the function with its arguments dictionary.
+- `get_order(order_id)` reads `data/instamart.db` and returns order_id, status, order_amount and delivery_minutes, or `{"error": "order not found"}`.
+- `search_policy(query)` returns the retrieve output under `results`.
+- `calculate_refund(order_amount, delivery_minutes)` returns the full amount if delivery took more than 45 minutes, otherwise 0.
+- `issue_refund` and `escalate_to_human` each append one JSON line (timestamp, tool name, order id, amount) to `outputs/refund_ledger.jsonl`.
+
+### ReAct agent results (`outputs/agent_runs.jsonl`)
+| Scenario | Status | Refund (INR) | Model calls | Tokens used |
+|---|---|---|---|---|
+| S1 | REFUND | 128.25 | 5 | 1,092 |
+| S2 | REFUND | 135.00 | 5 | 1,092 |
+| S3 | ESCALATE | 1,999.00 | 5 | 1,079 |
+| S4 | DENIED | 0.00 | 4 | 761 |
+| S5 | DENIED | 0.00 | 3 | 454 |
+| S6 | NOT_FOUND | 0.00 | 2 | 150 |
+| S7 | FALLBACK_MAX_ITERATIONS | 0.00 | 6 | 3,234 |
+
+All refund amounts equal `expected_refund_inr`. S7 uses the `[LOOP]` message, so the mock keeps calling `search_policy` and the agent stops after six model calls.
+
+### Stop-safely demonstrations
+| Demonstration | Status |
+|---|---|
+| S1 with token_limit=200 | FALLBACK_TOKEN_LIMIT (stopped after 3 calls and 471 tokens, before executing the tool just requested) |
+| S1 with time_limit_seconds=0 | FALLBACK_TIMEOUT (stops before the first model call, 0 calls) |
+
+Every fallback returns the steps completed so far and a short human-handoff summary in `final_answer`.
+
+### Crash and resume (S1)
+A checkpoint with the run id, scenario id, full message list, tokens used, step number and executed tools is written to `state/` after every tool observation. A simulated crash was raised right after the second tool execution and `resume_agent` continued from the checkpoint. Tools executed across the crash and the resume, in order: `get_order`, `search_policy`, `calculate_refund`, `issue_refund`. Four executions, none repeated, final status REFUND with INR 128.25.
+
+### ReAct versus plan-and-execute
+My ReAct agent asks the model one step at a time: 5 calls for a refund (S1), 4 for a delivery within 45 minutes (S4), 3 for a cancelled order (S5) and only 2 for an unknown order (S6), because it stops as soon as an observation settles the case. Each call resends the growing message list, so S1 used 1,092 tokens. A plan-and-execute design asks the model once for the whole list of steps (look up, search policy, calculate, issue or escalate), so it needs about 1 or 2 model calls and fewer tokens when everything goes as planned. Its weakness is an unexpected observation: for NOT_FOUND or a cancelled order the plan keeps going, runs useless steps, and the model has to be called again to replan. ReAct reacts to such cases immediately at no extra design effort. For this refund workflow I would choose ReAct (or a short fixed plan with a ReAct fallback) because the next step really depends on the previous result (status, delivery time, amount above INR 1000), a wrong refund is costly, and the extra calls are cheap compared with a mistaken payment.
+
+
 
 ## Limitations and Next Steps
-TODO
+
+- All data is synthetic, and `mock_llm.py` is a keyword-based stand-in, so the accuracy of the triage and the policy answers will differ with a real model.
+- The Premium flag comes from whole-window RFM, which includes the September window that defines the lapse label. It is a post-hoc whole-window label, so the retention list is illustrative and not a leakage-free evaluation.
+- The lapse model uses a single train/test split of 1,156 customers; the best logistic regression C (100) lies on the edge of the searched grid, so a wider grid and repeated splits would give more reliable estimates. Over-sampling by duplicating rows raises recall but lowers precision.
+- TF-IDF only matches words, not meaning; embeddings would handle paraphrases better.
+- The agent handles one tool call per model reply and treats every request as inside the 7-day refund window.
+- Next steps: build the segments from a snapshot before the lapse window, add a time-based train/test split, and add tests for each pipeline.
