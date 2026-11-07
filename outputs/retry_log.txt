@@ -1,0 +1,68 @@
+zero-shot | ticket=T0002 | retry=0 | wait=0.0554s
+zero-shot | ticket=T0116 | retry=0 | wait=0.0517s
+zero-shot | ticket=T0153 | retry=0 | wait=0.0498s
+zero-shot | ticket=T0039 | retry=0 | wait=0.0512s
+zero-shot | ticket=T0152 | retry=0 | wait=0.0558s
+zero-shot | ticket=T0043 | retry=0 | wait=0.0545s
+zero-shot | ticket=T0111 | retry=0 | wait=0.0529s
+zero-shot | ticket=T0155 | retry=0 | wait=0.0538s
+zero-shot | ticket=T0100 | retry=0 | wait=0.0512s
+zero-shot | ticket=T0068 | retry=0 | wait=0.0567s
+zero-shot | ticket=T0135 | retry=0 | wait=0.0546s
+zero-shot | ticket=T0009 | retry=0 | wait=0.0505s
+zero-shot | ticket=T0067 | retry=0 | wait=0.0539s
+zero-shot | ticket=T0106 | retry=0 | wait=0.0494s
+zero-shot | ticket=T0097 | retry=0 | wait=0.0559s
+zero-shot | ticket=T0003 | retry=0 | wait=0.0574s
+zero-shot | ticket=T0019 | retry=0 | wait=0.0465s
+zero-shot | ticket=T0086 | retry=0 | wait=0.0467s
+zero-shot | ticket=T0065 | retry=0 | wait=0.0545s
+few-shot | ticket=T0002 | retry=0 | wait=0.0552s
+few-shot | ticket=T0116 | retry=0 | wait=0.0487s
+few-shot | ticket=T0153 | retry=0 | wait=0.0515s
+few-shot | ticket=T0039 | retry=0 | wait=0.0495s
+few-shot | ticket=T0152 | retry=0 | wait=0.0501s
+few-shot | ticket=T0043 | retry=0 | wait=0.0465s
+few-shot | ticket=T0111 | retry=0 | wait=0.0486s
+few-shot | ticket=T0155 | retry=0 | wait=0.0551s
+few-shot | ticket=T0100 | retry=0 | wait=0.0563s
+few-shot | ticket=T0068 | retry=0 | wait=0.0507s
+few-shot | ticket=T0135 | retry=0 | wait=0.0499s
+few-shot | ticket=T0009 | retry=0 | wait=0.0532s
+few-shot | ticket=T0067 | retry=0 | wait=0.0492s
+few-shot | ticket=T0106 | retry=0 | wait=0.0558s
+few-shot | ticket=T0097 | retry=0 | wait=0.0498s
+few-shot | ticket=T0003 | retry=0 | wait=0.0459s
+few-shot | ticket=T0019 | retry=0 | wait=0.0524s
+few-shot | ticket=T0086 | retry=0 | wait=0.0509s
+few-shot | ticket=T0065 | retry=0 | wait=0.0462s
+zero-shot budget demo | ticket=T0002 | retry=0 | wait=0.0573s
+zero-shot budget demo | ticket=T0116 | retry=0 | wait=0.0463s
+zero-shot budget demo | ticket=T0153 | retry=0 | wait=0.0471s
+zero-shot budget demo | ticket=T0039 | retry=0 | wait=0.0460s
+zero-shot budget demo | ticket=T0152 | retry=0 | wait=0.0537s
+zero-shot budget demo | ticket=T0043 | retry=0 | wait=0.0470s
+zero-shot budget demo | ticket=T0111 | retry=0 | wait=0.0452s
+zero-shot budget demo | ticket=T0155 | retry=0 | wait=0.0560s
+zero-shot budget demo | ticket=T0100 | retry=0 | wait=0.0456s
+zero-shot budget demo | ticket=T0068 | retry=0 | wait=0.0483s
+zero-shot budget demo | ticket=T0135 | retry=0 | wait=0.0470s
+few-shot final | ticket=T0002 | retry=0 | wait=0.0506s
+few-shot final | ticket=T0116 | retry=0 | wait=0.0454s
+few-shot final | ticket=T0153 | retry=0 | wait=0.0494s
+few-shot final | ticket=T0039 | retry=0 | wait=0.0566s
+few-shot final | ticket=T0152 | retry=0 | wait=0.0543s
+few-shot final | ticket=T0043 | retry=0 | wait=0.0498s
+few-shot final | ticket=T0111 | retry=0 | wait=0.0518s
+few-shot final | ticket=T0155 | retry=0 | wait=0.0515s
+few-shot final | ticket=T0100 | retry=0 | wait=0.0530s
+few-shot final | ticket=T0068 | retry=0 | wait=0.0531s
+few-shot final | ticket=T0135 | retry=0 | wait=0.0531s
+few-shot final | ticket=T0009 | retry=0 | wait=0.0534s
+few-shot final | ticket=T0067 | retry=0 | wait=0.0543s
+few-shot final | ticket=T0106 | retry=0 | wait=0.0566s
+few-shot final | ticket=T0097 | retry=0 | wait=0.0454s
+few-shot final | ticket=T0003 | retry=0 | wait=0.0540s
+few-shot final | ticket=T0019 | retry=0 | wait=0.0538s
+few-shot final | ticket=T0086 | retry=0 | wait=0.0455s
+few-shot final | ticket=T0065 | retry=0 | wait=0.0505s
